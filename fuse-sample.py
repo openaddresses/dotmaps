@@ -54,12 +54,12 @@ log = logging.getLogger(__name__)
 
 dots_name = b'dots.mbtiles'
 dots_node = llfuse.ROOT_INODE+1
-dots_href = 'http://mike.teczno.com/img/openaddr-us-ca-dots.mbtiles'
+dots_href = 'http://s3.amazonaws.com/dotmaps.openaddresses.io/us-ca-monthly/set_141476.mbtiles'
+blocksize = 16*1024
 
 class TestFs(llfuse.Operations):
     def __init__(self, *args, **kwargs):
         llfuse.Operations.__init__(self, *args, **kwargs)
-        self.dots_file = remote.RemoteFileObject(dots_href, verbose=True, block_size=256*1024)
 
     def getattr(self, inode, ctx=None):
         entry = llfuse.EntryAttributes()
@@ -68,7 +68,7 @@ class TestFs(llfuse.Operations):
             entry.st_size = 0
         elif inode == dots_node:
             entry.st_mode = (stat.S_IFREG | 0o644)
-            entry.st_size = self.dots_file.length
+            entry.st_size = remote.RemoteFileObject(dots_href, verbose=True, block_size=blocksize).length
         else:
             raise llfuse.FUSEError(errno.ENOENT)
 
@@ -110,8 +110,11 @@ class TestFs(llfuse.Operations):
     def read(self, fh, off, size):
         log.debug('read: {}, {}, {}'.format(fh, off, size))
         assert fh == dots_node
+        self.dots_file = remote.RemoteFileObject(dots_href, verbose=True, block_size=blocksize)
         self.dots_file.seek(off)
-        return self.dots_file.read(size)
+        stuff = self.dots_file.read(size)
+        del self.dots_file
+        return stuff
     
     def release(self, inode):
         log.debug('release: {}'.format(inode))
