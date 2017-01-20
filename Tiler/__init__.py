@@ -1,4 +1,4 @@
-import os, TileStache, ModestMaps
+import os, TileStache, ModestMaps, base64
 from flask import Flask, Response, render_template
 from .tippecanoe import Config
 
@@ -17,7 +17,9 @@ def get_scene():
 @app.route('/<int:zoom>/<int:col>/<int:row>.<ext>')
 @app.route('/<int:zoom>/<int:col>/<int:row>')
 def get_tile(zoom, col, row, ext='json'):
-    layer = config.layers['/tmp/dotmaps/dots.mbtiles']
+    url = 'http://s3.amazonaws.com/dotmaps.openaddresses.io/us-ca-monthly/set_141476.mbtiles'
+    filename = base64.b64encode(url.encode('utf8')).decode('utf8')
+    layer = config.layers[os.path.join('/tmp/dotmaps', filename)]
     coord = ModestMaps.Core.Coordinate(row, col, zoom) # (1582, 656, 12)
     mime, body = TileStache.getTile(layer, coord, ext)
     headers = {'Content-Type': mime}

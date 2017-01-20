@@ -88,7 +88,7 @@ class TileWriter:
     def save_MapboxVectorTile(self, output):
         ''' Write raw MVT bytes from MBTiles row to output.
         '''
-        with sqlite3.connect(self.path) as db:
+        with sqlite3.connect('file:{}?immutable=1'.format(self.path), uri=True) as db:
             tile_row = (2**self.coord.zoom - 1) - self.coord.row
             res = db.execute('''
                 SELECT tile_data FROM tiles
