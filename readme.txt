@@ -10,6 +10,27 @@ pipelines that would be required to make them work.
 
 ----
 
+These scripts (in this order) generate monthly data over time for California:
+
+- download-runs.py
+- match-downloads.py
+- tippecanoe-downloads.py
+
+Cached and Tippecanoed data can be found here:
+
+- https://s3.amazonaws.com/dotmaps.openaddresses.io/us-ca-monthly/downloaded/files.csv
+- https://s3.amazonaws.com/dotmaps.openaddresses.io/us-ca-monthly/set_141476.mbtiles
+- https://s3.amazonaws.com/dotmaps.openaddresses.io/us-ca-monthly/set_131277.mbtiles
+- etc.
+
+Set numbers are from the live data base, so the two above match:
+
+- https://results.openaddresses.io/sets/141476/
+- https://results.openaddresses.io/sets/131277/
+- etc.
+
+----
+
 http://web.archive.org/web/20070227082525/http://fdo.osgeo.org/files/fdo/docs/FDG_FDODevGuide/files/WS7106c181349dd8d016672d6105df83c6e7-7fff.htm
 
     While geometry typically is two- or three-dimensional, it may also contain
