@@ -1,5 +1,5 @@
 import TileStache
-import sqlite3, subprocess, re, os.path
+import sqlite3, subprocess, re, os.path, base64
 
 WARNING_PAT_TPL = r'^\S+: Warning: using tile \d+/\d+/\d+ instead of {0}/{1}/{2}\n'
 
@@ -10,19 +10,26 @@ class Config:
     ''' Implements minimal configuration object for TileStache.
     
         See http://tilestache.org/doc/#custom-configuration
+        
+        mbtiles_dir, is_claypigeon: passed to Layers.
     '''
-    def __init__(self, dirpath):
-        self.cache = TileStache.Caches.Test()
-        self.layers = Layers(self)
+    def __init__(self, dirpath, mbtiles_dir, is_claypigeon):
+        self.cache = TileStache.Caches.Test() # Disk('cache')
+        self.layers = Layers(self, mbtiles_dir, is_claypigeon)
         self.dirpath = dirpath
 
 class Layers:
     ''' Implements minimal layers stub for TileStache Configuration.
     
         See http://tilestache.org/doc/#custom-configuration
+        
+        mbtiles_dir: directory where MBTiles files are located.
+        is_claypigeon: boolean flag for Claypigeon filesystem.
     '''
-    def __init__(self, config):
+    def __init__(self, config, mbtiles_dir, is_claypigeon):
         self.config = config
+        self.mbtiles_dir = mbtiles_dir
+        self.is_claypigeon = is_claypigeon
         self._dict = dict()
     
     def keys(self):
@@ -36,7 +43,11 @@ class Layers:
 
     def __getitem__(self, key):
         if key not in self._dict:
-            path = os.path.join(self.config.dirpath, key)
+            if self.is_claypigeon:
+                name = base64.b64encode(key.encode('utf8')).decode('ascii')
+            else:
+                name = key
+            path = os.path.join(self.config.dirpath, self.mbtiles_dir, name)
             proj = TileStache.Geography.SphericalMercator()
             meta = TileStache.Core.Metatile()
             layer = TileStache.Core.Layer(self.config, proj, meta)
@@ -60,7 +71,7 @@ class TippecanoeProvider:
     
     def getTypeByExtension(self, extension):
         if extension.lower() == 'mvt':
-            return ('application/x-protobuf', 'Mapbox Vector Tile')
+            return ('application/x-protobuf', 'MapboxVectorTile')
         elif extension.lower() in ('geojson', 'json'):
             return ('application/json', 'GeoJSON')
         else:
@@ -76,7 +87,7 @@ class TileWriter:
     
     def save(self, output, format):
         try:
-            if format == 'Mapbox Vector Tile':
+            if format == 'MapboxVectorTile':
                 return self.save_MapboxVectorTile(output)
             elif format == 'GeoJSON':
                 return self.save_GeoJSON(output)

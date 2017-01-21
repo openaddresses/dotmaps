@@ -3,7 +3,7 @@ import: https://mapzen.com/carto/refill-style/4/refill-style.yaml
 sources:
     _dots:
         type: MVT
-        url: "{z}/{x}/{y}.mvt"
+        url: "{{ url_for('get_tile', zoom=123, col=456, row=789, ext='mvt').replace('123/456/789', '{z}/{x}/{y}')|escape }}"
         max_zoom: 14
 
 layers:
