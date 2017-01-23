@@ -1,0 +1,2 @@
+BASE_URL=http://s3.amazonaws.com/
+MOUNT_DIR=/tmp/dotmaps

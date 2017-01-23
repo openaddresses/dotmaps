@@ -3,10 +3,10 @@ import uritemplate
 from flask import Flask, Response, render_template, url_for
 from .tippecanoe import Config, get_claypigeon_metadata, get_url_tile
 
-slippymaps_url_template = 'data.openaddresses.io/runs/{run_id}/slippymap.mbtiles'
+slippymaps_url_template = 'http://s3.amazonaws.com/data.openaddresses.io/runs/{run_id}/slippymap.mbtiles'
 
 app = Flask(__name__)
-config = Config('.', '/tmp/dotmaps', True)
+config = Config('.', os.environ['MOUNT_DIR'], True)
 
 @app.route('/')
 def get_index():
@@ -48,7 +48,7 @@ def get_one_tile(zoom, col, row, ext='json', run_id=None):
         url = uritemplate.expand(slippymaps_url_template, dict(run_id=run_id))
     else:
         # fall back to a recent California dataset.
-        url = 'dotmaps.openaddresses.io/us-ca-monthly/set_141476.mbtiles'
+        url = 'http://s3.amazonaws.com/dotmaps.openaddresses.io/us-ca-monthly/set_141476.mbtiles'
     mime, body = get_url_tile(config, url, row, col, zoom, ext)
     headers = {'Content-Type': mime}
     if ext == 'mvt':

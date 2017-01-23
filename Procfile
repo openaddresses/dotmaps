@@ -1,1 +1,2 @@
-fs: claypigeon-mount /tmp/dotmaps --base-url http://s3.amazonaws.com/dotmaps.openaddresses.io/us-ca-monthly/
+fuse: claypigeon-mount $MOUNT_DIR --base-url $BASE_URL
+web: python serve-tiles.py
