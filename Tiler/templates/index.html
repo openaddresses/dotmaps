@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Cupertino</title>
+    <title>Run {{ run_id }}</title>
     <meta charset="utf-8">
     <link rel="stylesheet" href="https://mapzen.com/js/mapzen.css">
     <script src="https://mapzen.com/js/mapzen.min.js"></script>
@@ -64,9 +64,9 @@
       }
       
       var map = L.Mapzen.map('map', {
-        center: [37.318373, -122.028352],
-        zoom: 16,
-        scene: "{{ url_for('get_scene')|escape }}"
+        center: [{{lat}}, {{lon}}],
+        zoom: {{zoom}},
+        scene: "{{ scene_url|escape }}"
       });
 
       // Move zoom control to the top right corner of the map

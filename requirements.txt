@@ -6,3 +6,4 @@ Jinja2==2.9.3
 MarkupSafe==0.23
 olefile==0.44
 honcho==0.7.1
+uritemplate==3.0.0

@@ -1,5 +1,5 @@
-import TileStache
-import sqlite3, subprocess, re, os.path, base64
+import TileStache, ModestMaps
+import sqlite3, subprocess, re, os.path, base64, json
 
 WARNING_PAT_TPL = r'^\S+: Warning: using tile \d+/\d+/\d+ instead of {0}/{1}/{2}\n'
 
@@ -11,25 +11,24 @@ class Config:
     
         See http://tilestache.org/doc/#custom-configuration
         
-        mbtiles_dir, is_claypigeon: passed to Layers.
+        mbtiles_dir: directory where MBTiles files are located.
+        is_claypigeon: boolean flag for Claypigeon filesystem.
     '''
     def __init__(self, dirpath, mbtiles_dir, is_claypigeon):
         self.cache = TileStache.Caches.Test() # Disk('cache')
-        self.layers = Layers(self, mbtiles_dir, is_claypigeon)
+        self.layers = Layers(self)
         self.dirpath = dirpath
+
+        self.mbtiles_dir = mbtiles_dir
+        self.is_claypigeon = is_claypigeon
 
 class Layers:
     ''' Implements minimal layers stub for TileStache Configuration.
     
         See http://tilestache.org/doc/#custom-configuration
-        
-        mbtiles_dir: directory where MBTiles files are located.
-        is_claypigeon: boolean flag for Claypigeon filesystem.
     '''
-    def __init__(self, config, mbtiles_dir, is_claypigeon):
+    def __init__(self, config):
         self.config = config
-        self.mbtiles_dir = mbtiles_dir
-        self.is_claypigeon = is_claypigeon
         self._dict = dict()
     
     def keys(self):
@@ -43,11 +42,11 @@ class Layers:
 
     def __getitem__(self, key):
         if key not in self._dict:
-            if self.is_claypigeon:
+            if self.config.is_claypigeon:
                 name = base64.b64encode(key.encode('utf8')).decode('ascii')
             else:
                 name = key
-            path = os.path.join(self.config.dirpath, self.mbtiles_dir, name)
+            path = os.path.join(self.config.dirpath, self.config.mbtiles_dir, name)
             proj = TileStache.Geography.SphericalMercator()
             meta = TileStache.Core.Metatile()
             layer = TileStache.Core.Layer(self.config, proj, meta)
@@ -123,3 +122,41 @@ class TileWriter:
             if warning_pattern.match(heading):
                 raise MissingTile('Missing TileWriter tile {}/{}/{}'.format(*self.zxy))
         output.write(content)
+
+def get_claypigeon_connection(url, dirpath):
+    '''
+    '''
+    name = base64.b64encode(url.encode('utf8')).decode('ascii')
+    path = os.path.join(dirpath, name)
+    
+    return sqlite3.connect('file:{}?immutable=1'.format(path), uri=True)
+
+def get_claypigeon_metadata(url, dirpath):
+    '''
+    '''
+    try:
+        connection = get_claypigeon_connection(url, dirpath)
+    except sqlite3.OperationalError as e:
+        return None
+    else:
+        with connection as db:
+            res = db.execute('''SELECT name, value FROM metadata
+                                WHERE name IN ('center', 'json')''')
+            
+            data = dict(res.fetchall())
+            lon, lat, zoom = map(float, data.get('center', '0,0,0').split(','))
+            
+            print('woo:', json.loads(data.get('json', '{}')))
+            
+            more = json.loads(data.get('json', '{}'))
+            fields = more.get('vector_layers', [])[0].get('fields', {}).keys()
+
+    return zoom, lat, lon, fields
+
+def get_url_tile(config, url, row, col, zoom, ext):
+    '''
+    '''
+    layer = config.layers[url]
+    coord = ModestMaps.Core.Coordinate(row, col, zoom) # (1582, 656, 12)
+    mime, body = TileStache.getTile(layer, coord, ext)
+    return (mime, body)
