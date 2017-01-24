@@ -15,19 +15,34 @@
         top: 1em;
         left: 1em;
         padding: .5em;
-        background-color: white;
+        background-color: rgba(255, 255, 255, .95);
+        border-radius: 3px;
         border: 1px solid black;
         position: absolute;
         z-index: 999;
+        display: none;
+        font-family: monospace;
+        font-size: 9pt;
       }
       html, body { margin: 0; padding: 0 }
   </style>
   </head>
   <body>
     <div id="map"></div>
-    <div id="address"></div>
+    <div id="address">
+        <table>
+            <tr><td>Number</td><td id="address-number">Yo</td></tr>
+            <tr><td>Street</td><td id="address-street">Yo</td></tr>
+            <tr><td>Unit</td><td id="address-unit">Yo</td></tr>
+            <tr><td>City</td><td id="address-city">Yo</td></tr>
+            <tr><td>Region</td><td id="address-region">Yo</td></tr>
+            <tr><td>Postcode</td><td id="address-postcode">Yo</td></tr>
+            <tr><td>Hash</td><td id="address-hash">Yo</td></tr>
+            <tr><td>Source</td><td id="address-source_path">Yo</td></tr>
+        </table>
+    </div>
     <script>
-
+    
       function onLoaded(event)
       {
         event.tangramLayer.setSelectionEvents({ hover: onHover, click: onClick });
@@ -35,22 +50,31 @@
       
       function onHover(selection)
       {
-        var label = document.getElementById('address'),
-            map = document.getElementById('map');
+        var fields = ['number', 'street', 'unit', 'city', 'region', 'postcode', 'hash', 'source_path'],
+            label = document.getElementById('address'),
+            map = document.getElementById('map'),
+            key, i, props = {};
 
         if(selection.feature)
         {
-            var props = selection.feature.properties,
-                addr = [props.number, props.street, props.unit].join(' ');
-
-            map.style.cursor = 'pointer';
-            
-            if(addr.trim())
+            for(key in selection.feature.properties)
             {
-                label.innerText = addr;
+                props[key.toLowerCase()] = selection.feature.properties[key];
+            }
+            
+            if('number' in props && 'street' in props)
+            {
+                for(i in fields)
+                {
+                    key = fields[i];
+                    document.getElementById('address-' + key).innerText = (props[key] || '');
+                }
+
+                map.style.cursor = 'pointer';
                 label.style.display = 'block';
                 label.style.left = (selection.pixel.x - 20) + 'px';
                 label.style.top = (selection.pixel.y - label.clientHeight - 10) + 'px';
+
                 return;
             }
         }
