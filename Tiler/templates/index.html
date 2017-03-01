@@ -87,7 +87,10 @@
       {
       }
       
+      var mapzen_key = 'mapzen-w4vD8KG';
+      
       var map = L.Mapzen.map('map', {
+        apiKey: mapzen_key,
         center: [{{lat}}, {{lon}}],
         zoom: {{zoom}},
         scene: "{{ scene_url|escape }}"
