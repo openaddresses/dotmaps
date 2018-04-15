@@ -3,8 +3,8 @@
   <head>
     <title>Run {{ run_id }}</title>
     <meta charset="utf-8">
-    <link rel="stylesheet" href="https://mapzen.com/js/mapzen.css">
-    <script src="https://mapzen.com/js/mapzen.min.js"></script>
+    <link rel="stylesheet" href="https://www.nextzen.org/js/nextzen.css">
+    <script src="https://www.nextzen.org/js/nextzen.min.js"></script>
     <style>
       #map {
         height: 100%;
@@ -87,10 +87,10 @@
       {
       }
       
-      var mapzen_key = 'mapzen-w4vD8KG';
+      var nextzen_key = '2fbIR01VTFuSyPuvdkBSfQ';
       
-      var map = L.Mapzen.map('map', {
-        apiKey: mapzen_key,
+      var map = L.Nextzen.map('map', {
+        apiKey: nextzen_key,
         center: [{{lat}}, {{lon}}],
         zoom: {{zoom}},
         scene: "{{ scene_url|escape }}"
@@ -100,7 +100,7 @@
       map.zoomControl.setPosition('topright');
 
       // URL hash
-      L.Mapzen.hash({map: map});
+      L.Nextzen.hash({map: map});
       
       // Set up interactivity
       map.on('tangramloaded', onLoaded);
